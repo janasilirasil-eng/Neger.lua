@@ -1,59 +1,50 @@
-lolocal Player = game.Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+local playerGui = lp:WaitForChild("PlayerGui")
 
--- База знаний ИИ (слова и ответы)
+-- Таблица ответов ИИ
 local Responses = {
-    ["привет"] = "Привет! Как у тебя дела?",
-    ["как дела"] = "У меня всё отлично, я же программа!",
-    ["ты кто"] = "Я твой личный ИИ-помощник в Roblox.",
-    ["пока"] = "До встречи! Удачи в игре.",
-    ["код"] = "Мой код написан на языке Lua."
+    ["привет"] = "Привет друг! Я твой ИИ помощник RussNpc.ai. Спрашивай что угодно!",
+    ["как дела"] = "У меня всё отлично, готов помогать тебе в игре!",
+    ["ты кто"] = "Я RussNpc.ai, твой персональный ИИ-ассистент.",
+    ["пока"] = "До встречи! Буду ждать тебя снова."
 }
 
--- Создаем интерфейс
-local ScreenGui = Instance.new("ScreenGui", PlayerGui)
-local ToggleButton = Instance.new("TextButton", ScreenGui)
-ToggleButton.Size = UDim2.new(0, 70, 0, 70)
-ToggleButton.Position = UDim2.new(0.95, -70, 0.85, -70)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-ToggleButton.Text = "AI"
-ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 255)
-ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.TextSize = 24
-ToggleButton.CornerRadius = UDim.new(1, 0)
+-- Фильтр мата
+local BadWords = {"мат1", "мат2", "оскорбление"} 
 
-local Frame = Instance.new("Frame", ScreenGui)
-Frame.Size = UDim2.new(0, 300, 0, 200)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
-Frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Frame.Visible = false
-Frame.Active = true
-Frame.Draggable = true
+local function getAIResponse(text)
+    local lowerText = string.lower(text)
+    for _, word in pairs(BadWords) do
+        if string.find(lowerText, word) then
+            return "Пожалуйста, общайся вежливее. Я здесь для помощи!"
+        end
+    end
+    return Responses[lowerText] or "Интересный вопрос, я пока не знаю ответа."
+end
 
-local Input = Instance.new("TextBox", Frame)
-Input.Size = UDim2.new(0, 280, 0, 50)
-Input.Position = UDim2.new(0, 10, 0, 10)
-Input.PlaceholderText = "Спроси меня о чем-нибудь..."
-Input.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Input.TextColor3 = Color3.fromRGB(255, 255, 255)
+-- Создание GUI (базовый пример)
+local ScreenGui = Instance.new("ScreenGui", playerGui)
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 300, 0, 300)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Draggable = true
+MainFrame.Active = true
 
-local SendBtn = Instance.new("TextButton", Frame)
-SendBtn.Size = UDim2.new(0, 280, 0, 50)
-SendBtn.Position = UDim2.new(0, 10, 0, 70)
-SendBtn.Text = "Отправить вопрос"
-SendBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-SendBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+local Input = Instance.new("TextBox", MainFrame)
+Input.Size = UDim2.new(0.8, 0, 0.2, 0)
+Input.Position = UDim2.new(0.1, 0, 0.2, 0)
+Input.PlaceholderText = "Твой вопрос..."
 
--- Логика
-ToggleButton.MouseButton1Click:Connect(function() Frame.Visible = not Frame.Visible end)
+local SendBtn = Instance.new("TextButton", MainFrame)
+SendBtn.Size = UDim2.new(0.8, 0, 0.2, 0)
+SendBtn.Position = UDim2.new(0.1, 0, 0.5, 0)
+SendBtn.Text = "ОТПРАВИТЬ"
 
 SendBtn.MouseButton1Click:Connect(function()
-    local text = string.lower(Input.Text)
-    local answer = Responses[text] or "Я пока не знаю ответа на это, но я учусь!"
-    
-    -- Отправка ответа в чат
-    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("ИИ: " .. answer, "All")
+    local answer = getAIResponse(Input.Text)
+    -- Отправляем в чат или выводим на экран
+    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("RussNpc.ai: " .. answer, "All")
     Input.Text = ""
 end)
-)
-
