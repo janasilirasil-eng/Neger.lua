@@ -43,4 +43,3 @@ SendBtn.MouseButton1Click:Connect(function()
     if textChannel then textChannel:SendAsync("RussNpc.ai: " .. answer) end
     Input.Text = ""
 end)
-
